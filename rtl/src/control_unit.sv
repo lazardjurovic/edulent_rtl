@@ -6,10 +6,11 @@ module control_unit(
     input wire i_rstn,
     input wire[7:0] i_opcode,
 
-    output reg[2:0] o_alu_cmd,
+    output reg o_alu_calculate,
     output reg[3:0] o_transfer_cmd,
     output reg o_inc_pc,
     output reg[1:0] o_inc_dec_sp,
+    output wire next_instr
     /*
        
        o_transfer_cmd for different commands
@@ -32,8 +33,6 @@ module control_unit(
        F => MD <- PC
     */
     
-    output reg next_instr
-    
     );
     
     typedef enum logic[4:0] {
@@ -51,22 +50,46 @@ module control_unit(
         else
             curr_state <= next_state;
     end
-    
-    
-    wire read_operand = 
-        (i_opcode == 8'h11) | (i_opcode == 8'h13) | (i_opcode == 8'h19) |
-        (i_opcode == 8'h1B) | (i_opcode == 8'h21) | (i_opcode == 8'h23) | 
-        (i_opcode == 8'h31) | (i_opcode == 8'h41) | (i_opcode == 8'h39) | 
-        (i_opcode == 8'h49) | (i_opcode == 8'h3B) | (i_opcode == 8'h4B) |
-        (i_opcode == 8'h61) | (i_opcode == 8'h71) | (i_opcode == 8'h81) |
-        (i_opcode == 8'h69) | (i_opcode == 8'h79) | (i_opcode == 8'h89) |
-        (i_opcode == 8'hA1) | (i_opcode == 8'hA5) | (i_opcode == 8'hA9) | 
-        (i_opcode == 8'hC1); 
-    
-    wire mov_with_address = 
-        (i_opcode == 8'h11) | (i_opcode == 8'h13) | (i_opcode == 8'h21) | (i_opcode == 8'h23) |
-        (i_opcode == 8'h31) | (i_opcode == 8'h41) | (i_opcode == 8'h61) | (i_opcode == 8'h71) | 
-        (i_opcode == 8'h81) | (i_opcode == 8'hA1) | (i_opcode == 8'hA5) | (i_opcode == 8'hA9);
+
+    wire read_operand = |({
+        (i_opcode == 8'h11),
+        (i_opcode == 8'h13),
+        (i_opcode == 8'h19),
+        (i_opcode == 8'h1B),
+        (i_opcode == 8'h21),
+        (i_opcode == 8'h23),
+        (i_opcode == 8'h31),
+        (i_opcode == 8'h41),
+        (i_opcode == 8'h39),
+        (i_opcode == 8'h49),
+        (i_opcode == 8'h3B),
+        (i_opcode == 8'h4B),
+        (i_opcode == 8'h61),
+        (i_opcode == 8'h71),
+        (i_opcode == 8'h81),
+        (i_opcode == 8'h69),
+        (i_opcode == 8'h79),
+        (i_opcode == 8'h89),
+        (i_opcode == 8'hA1),
+        (i_opcode == 8'hA5),
+        (i_opcode == 8'hA9),
+        (i_opcode == 8'hC1)
+    });
+
+    wire mov_with_address = |({
+    (i_opcode == 8'h11),
+    (i_opcode == 8'h13),
+    (i_opcode == 8'h21),
+    (i_opcode == 8'h23),
+    (i_opcode == 8'h31),
+    (i_opcode == 8'h41),
+    (i_opcode == 8'h61),
+    (i_opcode == 8'h71),
+    (i_opcode == 8'h81),
+    (i_opcode == 8'hA1),
+    (i_opcode == 8'hA5),
+    (i_opcode == 8'hA9)
+});
     
     wire alu_res_to_ap = (i_opcode == 8'h3B) | (i_opcode == 8'h4B);
     
@@ -232,24 +255,13 @@ module control_unit(
     
     always_comb begin
     
-        o_alu_cmd <= 3'b000;
+        o_alu_calculate <= 1'b1;
         o_transfer_cmd <= 4'h0;
         o_inc_pc <= 1'b0;
         o_inc_dec_sp <= 2'b00;
     
         case(curr_state)
-            ALU: 
-                begin
-                    case(i_opcode[7:4])
-                        4'h3: o_alu_cmd <= 3'b001;
-                        4'h4: o_alu_cmd <= 3'b010;
-                        4'h6: o_alu_cmd <= 3'b011;
-                        4'h7: o_alu_cmd <= 3'b100;
-                        4'h8: o_alu_cmd <= 3'b101;
-                        4'h5: o_alu_cmd <= 3'b110;
-                        4'h9: o_alu_cmd <= 3'b111;
-                    endcase
-                end
+               ALU: o_alu_calculate <= 1'b1; 
                MA_PC: o_transfer_cmd <= 4'h1;
                READ_MEMORY_INC_PC:
                     begin
@@ -290,7 +302,8 @@ module control_unit(
         endcase
     
     end
-     
-    assign next_instr = (curr_state == PC_AP) | (curr_state == JMP_MOV);
+    
+    assign next_instr = (curr_state == JMP_MOV) | (curr_state == PC_AP);
+    
     
 endmodule
