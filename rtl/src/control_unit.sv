@@ -29,7 +29,7 @@ module control_unit(
        C => A <- IN
        D => OUT <- A
        E => PC <- AP
-    
+       F => MD <- PC
     */
     
     output reg next_instr
@@ -39,8 +39,8 @@ module control_unit(
     typedef enum logic[4:0] {
         RESET,
         MA_PC, READ_MEMORY_INC_PC, IR_MD, MA_PC_OPERAND, READ_OPERAND, MA_MD, READ_MEMORY,A_MD,AP_MD,
-        MA_AP, MA_SP, READ_MEMORY_INC_SP, MD_A, LOAD_DATA, MD_AP, DECREMENT_SP,
-        A_R, AP_R, JMP_MOV, ALU, A_IN, OUT_A
+        MA_AP, MA_SP, READ_MEMORY_INC_SP, MD_A, STORE_DATA, MD_AP, DECREMENT_SP,
+        A_R, AP_R, JMP_MOV, ALU, A_IN, OUT_A, MD_PC, PC_AP
     } state_t;
        
     state_t curr_state, next_state;
@@ -60,7 +60,8 @@ module control_unit(
         (i_opcode == 8'h49) | (i_opcode == 8'h3B) | (i_opcode == 8'h4B) |
         (i_opcode == 8'h61) | (i_opcode == 8'h71) | (i_opcode == 8'h81) |
         (i_opcode == 8'h69) | (i_opcode == 8'h79) | (i_opcode == 8'h89) |
-        (i_opcode == 8'hA1) | (i_opcode == 8'hA5) | (i_opcode == 8'hA9); 
+        (i_opcode == 8'hA1) | (i_opcode == 8'hA5) | (i_opcode == 8'hA9) | 
+        (i_opcode == 8'hC1); 
     
     wire mov_with_address = 
         (i_opcode == 8'h11) | (i_opcode == 8'h13) | (i_opcode == 8'h21) | (i_opcode == 8'h23) |
@@ -108,6 +109,7 @@ module control_unit(
              READ_OPERAND:
                 begin
                     if(mov_with_address == 1'b1) begin
+                        
                         next_state <= MA_MD;
                     end else 
                         begin    
@@ -123,6 +125,7 @@ module control_unit(
                                 8'h69: next_state <= ALU;
                                 8'h79: next_state <= ALU;
                                 8'h89: next_state <= ALU;
+                                8'hC1: next_state <= AP_MD;
                                 default: ;
                             endcase
                         end
@@ -132,11 +135,11 @@ module control_unit(
                     case (i_opcode)
                         8'h21: next_state <= MD_A;
                         8'h23: next_state <= MD_AP;
-                        8'h31: next_state <= LOAD_DATA;
-                        8'h41: next_state <= LOAD_DATA;
-                        8'h61: next_state <= LOAD_DATA;
-                        8'h71: next_state <= LOAD_DATA;
-                        8'h81: next_state <= LOAD_DATA;
+                        8'h31: next_state <= STORE_DATA;
+                        8'h41: next_state <= STORE_DATA;
+                        8'h61: next_state <= STORE_DATA;
+                        8'h71: next_state <= STORE_DATA;
+                        8'h81: next_state <= STORE_DATA;
                         default: next_state <= READ_MEMORY;
                     endcase
                 end
@@ -158,7 +161,14 @@ module control_unit(
                     endcase
                 end
             A_MD: next_state <= MA_PC;
-            AP_MD: next_state <= MA_PC;
+            AP_MD:
+                begin
+                    if(i_opcode == 8'hC1) begin
+                        next_state <= MA_SP;
+                    end else begin
+                        next_state <= MA_PC;
+                    end
+                end
             MA_AP: next_state <= READ_MEMORY;
             MA_SP:
                 begin
@@ -167,6 +177,7 @@ module control_unit(
                         8'h1E: next_state <= READ_MEMORY_INC_SP;
                         8'h2C: next_state <= MD_A;
                         8'h2E: next_state <= MD_AP;
+                        8'hC1: next_state <= MD_PC;
                         default: ;
                     endcase
                 end
@@ -178,9 +189,9 @@ module control_unit(
                         default: ;
                      endcase
                 end
-            MD_A: next_state <= LOAD_DATA;
-            MD_AP: next_state <= LOAD_DATA;
-            LOAD_DATA: 
+            MD_A: next_state <= STORE_DATA;
+            MD_AP: next_state <= STORE_DATA;
+            STORE_DATA: 
                 begin
                     case (i_opcode)
                         8'h31: next_state <= ALU;
@@ -188,6 +199,7 @@ module control_unit(
                         8'h61: next_state <= ALU;
                         8'h71: next_state <= ALU;
                         8'h81: next_state <= ALU;
+                        8'hC1: next_state <= PC_AP;
                         default: next_state <= MA_PC;
                     endcase
                 end
@@ -208,6 +220,8 @@ module control_unit(
             JMP_MOV: next_state <= MA_PC;
             A_IN: next_state <= MA_PC;
             OUT_A: next_state <= MA_PC;
+            MD_PC: next_state <= STORE_DATA;
+            PC_AP : next_state <= MA_PC;
         endcase
     
     
@@ -215,14 +229,6 @@ module control_unit(
     end
     
     //combinational output generation for data 
-    
-    wire alu_add = (i_opcode == 8'h31) | (i_opcode == 8'h39) | (i_opcode == 8'h3B) | (i_opcode == 8'h34);
-    wire alu_sub = (i_opcode == 8'h41) | (i_opcode == 8'h49) | (i_opcode == 8'h4B) | (i_opcode == 8'h44);
-    wire alu_or = (i_opcode == 8'h61) | (i_opcode == 8'h69) | (i_opcode == 8'h64);
-    wire alu_and = (i_opcode == 8'h71) | (i_opcode == 8'h79) | (i_opcode == 8'h74);
-    wire alu_xor = (i_opcode == 8'h81) | (i_opcode == 8'h89) | (i_opcode == 8'h84);
-    wire alu_not = i_opcode == 8'h50;
-    wire alu_shr = i_opcode == 8'h90;
     
     always_comb begin
     
@@ -252,7 +258,11 @@ module control_unit(
                      end
                IR_MD: o_transfer_cmd <= 4'h3;
                MA_PC_OPERAND: o_transfer_cmd <= 4'h1;
-               READ_OPERAND: o_transfer_cmd <= 4'h2;
+               READ_OPERAND:
+                    begin
+                        o_transfer_cmd <= 4'h2;
+                        o_inc_pc <= 1'b1;
+                    end
                MA_MD: o_transfer_cmd <= 4'h4;
                READ_MEMORY: o_transfer_cmd <= 4'h2;
                A_MD: o_transfer_cmd <= 4'h5;
@@ -265,7 +275,7 @@ module control_unit(
                         o_inc_dec_sp <= 1'b01;
                     end
                 MD_A: o_transfer_cmd <= 4'h8;
-                LOAD_DATA: ; // todo: decode what it is
+                STORE_DATA: ; // todo: decode what it is
                 MD_AP: o_transfer_cmd <= 4'h8;
                 DECREMENT_SP: o_inc_dec_sp <= 1'b10;
                 A_R: o_transfer_cmd <= 4'h5;
@@ -273,6 +283,8 @@ module control_unit(
                 JMP_MOV: o_transfer_cmd <= 4'hB;
                 A_IN: o_transfer_cmd <= 4'hC;
                 OUT_A: o_transfer_cmd <= 4'hD;
+                MD_PC: o_transfer_cmd <= 4'hF;
+                PC_AP: o_transfer_cmd <= 4'hE;
             default: ;
         
         endcase
@@ -280,7 +292,6 @@ module control_unit(
     end
     
     
-    assign next_instr = (curr_state == JMP_MOV) | (curr_state == AP_MD) |
-    (curr_state == A_R) | (curr_state == AP_R) ;
+    assign next_instr = (curr_state == PC_AP);
     
 endmodule
