@@ -11,7 +11,8 @@ module control_unit(
     output reg o_inc_pc,
     output reg[1:0] o_inc_dec_sp,
     output wire o_alu_res_to_ap,
-    output wire next_instr
+    output wire next_instr,
+    output reg o_mem_write_enable
     /*
        
        o_transfer_cmd for different commands
@@ -260,6 +261,7 @@ module control_unit(
         o_transfer_cmd <= 4'h0;
         o_inc_pc <= 1'b0;
         o_inc_dec_sp <= 2'b00;
+        o_mem_write_enable <= 1'b0;
     
         case(curr_state)
                ALU: o_alu_calculate <= 1'b1; 
@@ -288,7 +290,7 @@ module control_unit(
                         o_inc_dec_sp <= 1'b01;
                     end
                 MD_A: o_transfer_cmd <= 4'h8;
-                STORE_DATA: ; // todo: decode what it is
+                STORE_DATA: o_mem_write_enable <= 1'b1; // todo: decode what it is
                 MD_AP: o_transfer_cmd <= 4'h8;
                 DECREMENT_SP: o_inc_dec_sp <= 1'b10;
                 A_R: o_transfer_cmd <= 4'h5;
