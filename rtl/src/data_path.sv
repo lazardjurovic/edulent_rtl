@@ -12,6 +12,7 @@ module data_path(
     input reg[7:0] i_in,
     output reg[7:0] o_out,
     input wire i_alu_res_to_ap,
+    output wire[7:0] o_IR,
 
     output reg [7:0] o_mem_addr,
     input reg [7:0] i_mem_data_read,
@@ -122,6 +123,8 @@ module data_path(
     
     assign o_out = OUT;
     assign IN = i_in;
+    
+    assign o_IR = IR;
     
     // ALU combinational logic
     assign alu_res = (IR[7:4] == 4'h3) ? (A + MD) :
