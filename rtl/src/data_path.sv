@@ -21,7 +21,7 @@ module data_path(
     // Registers defined in specs
     reg [7:0] PC, IR, SP, MA, MD, A, AP, R, IN, OUT;
     reg [1:0] CZ; // carry and zero flag
-    reg [7:0] alu_res;
+    wire [7:0] alu_res;
 
     always_ff @(posedge i_clk or negedge i_rstn) begin
         if (!i_rstn) begin
@@ -100,20 +100,8 @@ module data_path(
                 2'b01: SP <= SP + 1;
                 2'b10: SP <= SP - 1;
             endcase
-            
 
             if (i_alu_calculate) begin
-                case (IR[7:4])
-                    4'h3: alu_res <= A+MD;
-                    4'h4: alu_res <= A-MD;
-                    4'h5: alu_res <= ~A;
-                    4'h6: alu_res <= A | MD;
-                    4'h7: alu_res <= A & MD;
-                    4'h8: alu_res <= A ^ MD;
-                    4'h9: alu_res <= {1'b0,A[7:0]};
-                    default: ;
-                endcase
-                
                 if(alu_res == 8'h00) begin
                     CZ[0] <= 1'b1;
                 end else begin
@@ -134,5 +122,15 @@ module data_path(
     
     assign o_out = OUT;
     assign IN = i_in;
+    
+    // ALU combinational logic
+    assign alu_res = (IR[7:4] == 4'h3) ? (A + MD) :
+                     (IR[7:4] == 4'h4) ? (A - MD) :
+                     (IR[7:4] == 4'h5) ? (~A) :
+                     (IR[7:4] == 4'h6) ? (A | MD) :
+                     (IR[7:4] == 4'h7) ? (A & MD) :
+                     (IR[7:4] == 4'h8) ? (A ^ MD) :
+                     (IR[7:4] == 4'h9) ? {1'b0, A[7:0]} :
+                     8'b0;
     
 endmodule
