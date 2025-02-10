@@ -19,34 +19,17 @@ module data_path(
 );
 
     // Registers defined in specs
-    reg [7:0] PC, IR, SP, MA, MD, A, AP, R, STATUS, IN, OUT;
+    reg [7:0] PC, IR, SP, MA, MD, A, AP, R, IN, OUT;
+    reg [1:0] CZ; // carry and zero flag
+    reg [7:0] alu_res;
 
     always_ff @(posedge i_clk or negedge i_rstn) begin
         if (!i_rstn) begin
             // Reset all registers to zero
-            {PC, IR, SP, MA, MD, OUT, IN, A, AP, R, STATUS, IN, OUT} <= 0;
+            {PC, IR, SP, MA, MD, OUT, IN, A, AP, R, CZ, IN, OUT} <= 0;
         end 
         else begin
-        /*
-       
-       0 => nothing
-       1 => MA <- PC
-       2 => MD <- M[MA]
-       3 => IR <- MD
-       4 => MA <- MD
-       5 => A/AP <- MD
-       6 => MA <- AP
-       7 => MA <- SP
-       8 => MD <- A/AP
-       9 => M[MA] <- MD
-       A => A/AP <- R
-       B => PC <- MD
-       C => A <- IN
-       D => OUT <- A
-       E => PC <- AP
-       F => MD <- PC
-       
-       */
+        
        // Drive register transactions
             case (i_transfer_cmd)
                 4'h1: MA <= PC;
@@ -85,7 +68,22 @@ module data_path(
                             A <= R;
                         end
                     end
-                4'hB: PC <= MD;
+                4'hB:
+                    begin
+                        case(IR) 
+                            8'hA1: PC <= MD;
+                            8'hA5:
+                                begin
+                                    if(CZ[0] == 1'b1)
+                                        PC <= MD;
+                                end
+                            8'hA9:
+                                begin
+                                    if(CZ[1] == 1'b1)
+                                        PC <= MD;
+                                end
+                        endcase
+                    end
                 4'hC: A<= IN;
                 4'hD: OUT <= A;
                 4'hE: PC <= AP;
@@ -106,15 +104,29 @@ module data_path(
 
             if (i_alu_calculate) begin
                 case (IR[7:4])
-                    4'h3: R <= A+MD;
-                    4'h4: R <= A-MD;
-                    4'h5: R <= ~A;
-                    4'h6: R <= A | MD;
-                    4'h7: R <= A & MD;
-                    4'h8: R <= A ^ MD;
-                    4'h9: R <= {1'b0,A[7:0]};
+                    4'h3: alu_res <= A+MD;
+                    4'h4: alu_res <= A-MD;
+                    4'h5: alu_res <= ~A;
+                    4'h6: alu_res <= A | MD;
+                    4'h7: alu_res <= A & MD;
+                    4'h8: alu_res <= A ^ MD;
+                    4'h9: alu_res <= {1'b0,A[7:0]};
                     default: ;
                 endcase
+                
+                if(alu_res == 8'h00) begin
+                    CZ[0] <= 1'b1;
+                end else begin
+                    CZ[0] <= 1'b0;
+                end
+                
+                if(alu_res > 255 ) begin // DRIVE FOR SHR
+                    CZ[1] <= 1'b1;
+                end else begin
+                    CZ[1] <= 1'b0;
+                end
+                
+                R <= alu_res;
             end
 
         end
