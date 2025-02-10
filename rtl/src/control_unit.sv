@@ -178,6 +178,7 @@ module control_unit(
                         8'h2C: next_state <= MD_A;
                         8'h2E: next_state <= MD_AP;
                         8'hC1: next_state <= MD_PC;
+                        8'hB0: next_state <= READ_MEMORY_INC_SP;
                         default: ;
                     endcase
                 end
@@ -186,6 +187,7 @@ module control_unit(
                      case( i_opcode)
                         8'h1C: next_state <= A_MD;
                         8'h1E: next_state <= AP_MD;
+                        8'hB0: next_state <= JMP_MOV;
                         default: ;
                      endcase
                 end
@@ -223,8 +225,6 @@ module control_unit(
             MD_PC: next_state <= STORE_DATA;
             PC_AP : next_state <= MA_PC;
         endcase
-    
-    
     
     end
     
@@ -290,8 +290,7 @@ module control_unit(
         endcase
     
     end
-    
-    
-    assign next_instr = (curr_state == PC_AP);
+     
+    assign next_instr = (curr_state == PC_AP) | (curr_state == JMP_MOV);
     
 endmodule

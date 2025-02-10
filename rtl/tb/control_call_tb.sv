@@ -20,7 +20,7 @@ module control_call_tb;
     always #20 i_clk = ~i_clk;
     
     // Opcodes found in the design
-    logic [7:0] opcodes[] = '{8'hC1};
+    logic [7:0] opcodes[] = '{8'hC1, 8'hB0};
     
     initial begin
         i_clk = 0;
