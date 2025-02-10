@@ -5,29 +5,42 @@ module control_unit(
     input wire i_clk,
     input wire i_rstn,
     input wire[7:0] i_opcode,
+
+    output reg[2:0] o_alu_cmd,
+    output reg[3:0] o_transfer_cmd,
+    output reg o_inc_pc,
+    output reg[1:0] o_inc_dec_sp,
+    /*
+       
+       o_transfer_cmd for different commands
+       
+       0 => nothing
+       1 => MA <- PC
+       2 => MD <- M[MA]
+       3 => IR <- MD
+       4 => MA <- MD
+       5 => A/AP <- MD
+       6 => MA <- AP
+       7 => MA <- SP
+       8 => MD <- A/AP
+       9 => M[MA] <- MD
+       A => A/AP <- R
+       B => PC <- MD
+       C => A <- IN
+       D => OUT <- A
+       E => PC <- AP
     
-//    output reg o_ma_in,
-//    output reg o_ma_out,
-//    output reg o_pc_out,
-//    output reg o_pc_in,
-//    output reg o_pc_increment,
-//    output reg o_md_in,
-//    output reg o_md_out,
-//    output reg o_ir_in,
+    */
     
     output reg next_instr
     
     );
     
-    /* 
-    TODO: optimize number of sttate by just making one alu state and from it output ALU code
-    */
-    
     typedef enum logic[4:0] {
         RESET,
         MA_PC, READ_MEMORY_INC_PC, IR_MD, MA_PC_OPERAND, READ_OPERAND, MA_MD, READ_MEMORY,A_MD,AP_MD,
         MA_AP, MA_SP, READ_MEMORY_INC_SP, MD_A, LOAD_DATA, MD_AP, DECREMENT_SP,
-        ADD_A, SUB_A, A_R, ADD_AP, SUB_AP, AP_R, NOT_A, SHR, OR_A, AND_A, XOR_A
+        A_R, AP_R, JMP_MOV, ALU, A_IN, OUT_A
     } state_t;
        
     state_t curr_state, next_state;
@@ -46,12 +59,15 @@ module control_unit(
         (i_opcode == 8'h31) | (i_opcode == 8'h41) | (i_opcode == 8'h39) | 
         (i_opcode == 8'h49) | (i_opcode == 8'h3B) | (i_opcode == 8'h4B) |
         (i_opcode == 8'h61) | (i_opcode == 8'h71) | (i_opcode == 8'h81) |
-        (i_opcode == 8'h69) | (i_opcode == 8'h79) | (i_opcode == 8'h89); 
+        (i_opcode == 8'h69) | (i_opcode == 8'h79) | (i_opcode == 8'h89) |
+        (i_opcode == 8'hA1) | (i_opcode == 8'hA5) | (i_opcode == 8'hA9); 
     
     wire mov_with_address = 
         (i_opcode == 8'h11) | (i_opcode == 8'h13) | (i_opcode == 8'h21) | (i_opcode == 8'h23) |
         (i_opcode == 8'h31) | (i_opcode == 8'h41) | (i_opcode == 8'h61) | (i_opcode == 8'h71) | 
-        (i_opcode == 8'h81);
+        (i_opcode == 8'h81) | (i_opcode == 8'hA1) | (i_opcode == 8'hA5) | (i_opcode == 8'hA9);
+    
+    wire alu_res_to_ap = (i_opcode == 8'h3B) | (i_opcode == 8'h4B);
     
     // next state generation logic
     always_comb begin
@@ -75,11 +91,15 @@ module control_unit(
                                 8'h2E: next_state <= DECREMENT_SP;
                                 8'h34: next_state <= MA_AP;
                                 8'h44: next_state <= MA_AP;
-                                8'h50: next_state <= NOT_A;
-                                8'h90: next_state <= SHR;
+                                8'h50: next_state <= ALU;
+                                8'h90: next_state <= ALU;
                                 8'h64: next_state <= MA_AP;
                                 8'h74: next_state <= MA_AP;
                                 8'h84: next_state <= MA_AP;
+                                8'hD0: next_state <= A_IN;
+                                8'hE0: next_state <= OUT_A;
+                                8'hB0: next_state <= MA_SP;
+                                8'hC1: ; //CALL impelmentation
                                 default: ;                                
                             endcase                 
                         end
@@ -94,15 +114,15 @@ module control_unit(
                             case (i_opcode)
                                 8'h19: next_state <= A_MD;
                                 8'h1b: next_state <= AP_MD;
-                                8'h39: next_state <= ADD_A;
-                                8'h49: next_state <= SUB_A;
-                                8'h3B: next_state <= ADD_AP;
-                                8'h4B: next_state <= SUB_AP;
+                                8'h39: next_state <= ALU;
+                                8'h49: next_state <= ALU;
+                                8'h3B: next_state <= ALU;
+                                8'h4B: next_state <= ALU;
                                 8'h34: next_state <= MA_AP;
                                 8'h44: next_state <= MA_AP;
-                                8'h69: next_state <= OR_A;
-                                8'h79: next_state <= AND_A;
-                                8'h89: next_state <= XOR_A;
+                                8'h69: next_state <= ALU;
+                                8'h79: next_state <= ALU;
+                                8'h89: next_state <= ALU;
                                 default: ;
                             endcase
                         end
@@ -126,11 +146,14 @@ module control_unit(
                         8'h11: next_state <= A_MD;
                         8'h13: next_state <= AP_MD;
                         8'h14: next_state <= A_MD;
-                        8'h34: next_state <= ADD_A;
-                        8'h44: next_state <= SUB_A;
-                        8'h64: next_state <= OR_A;
-                        8'h74: next_state <= AND_A;
-                        8'h84: next_state <= XOR_A;
+                        8'h34: next_state <= ALU;
+                        8'h44: next_state <= ALU;
+                        8'h64: next_state <= ALU;
+                        8'h74: next_state <= ALU;
+                        8'h84: next_state <= ALU;
+                        8'hA1: next_state <= JMP_MOV;
+                        8'hA5: next_state <= JMP_MOV;
+                        8'hA9: next_state <= JMP_MOV;
                         default: ;
                     endcase
                 end
@@ -160,35 +183,104 @@ module control_unit(
             LOAD_DATA: 
                 begin
                     case (i_opcode)
-                        8'h31: next_state <= ADD_A;
-                        8'h41: next_state <= SUB_A;
-                        8'h61: next_state <= OR_A;
-                        8'h71: next_state <= AND_A;
-                        8'h81: next_state <= XOR_A;
+                        8'h31: next_state <= ALU;
+                        8'h41: next_state <= ALU;
+                        8'h61: next_state <= ALU;
+                        8'h71: next_state <= ALU;
+                        8'h81: next_state <= ALU;
                         default: next_state <= MA_PC;
                     endcase
                 end
             DECREMENT_SP: next_state <= MA_SP;
-            ADD_A: next_state <= A_R;
-            SUB_A: next_state <= A_R;
             A_R: next_state <= MA_PC;
-            ADD_AP: next_state <= AP_R;
-            SUB_AP: next_state <= AP_R;
             AP_R: next_state <= MA_PC;
-            NOT_A: next_state <= A_R;
-            SHR: next_state <= A_R;
-            OR_A: next_state <= A_R;
-            AND_A: next_state <= A_R;
-            XOR_A: next_state <= A_R;
+            ALU:
+                begin
+                    
+                    if( alu_res_to_ap == 1'b1) begin
+                        next_state <= AP_R;
+                    end else begin // result goes to A
+                        next_state <= A_R;
+                    end
+                    
+                end
+            
+            JMP_MOV: next_state <= MA_PC;
+            A_IN: next_state <= MA_PC;
+            OUT_A: next_state <= MA_PC;
         endcase
     
     
     
     end
     
-    //combinational output generation for data path
+    //combinational output generation for data 
     
-    assign next_instr = | (curr_state == A_MD) | (curr_state == AP_MD) |
+    wire alu_add = (i_opcode == 8'h31) | (i_opcode == 8'h39) | (i_opcode == 8'h3B) | (i_opcode == 8'h34);
+    wire alu_sub = (i_opcode == 8'h41) | (i_opcode == 8'h49) | (i_opcode == 8'h4B) | (i_opcode == 8'h44);
+    wire alu_or = (i_opcode == 8'h61) | (i_opcode == 8'h69) | (i_opcode == 8'h64);
+    wire alu_and = (i_opcode == 8'h71) | (i_opcode == 8'h79) | (i_opcode == 8'h74);
+    wire alu_xor = (i_opcode == 8'h81) | (i_opcode == 8'h89) | (i_opcode == 8'h84);
+    wire alu_not = i_opcode == 8'h50;
+    wire alu_shr = i_opcode == 8'h90;
+    
+    always_comb begin
+    
+        o_alu_cmd <= 3'b000;
+        o_transfer_cmd <= 4'h0;
+        o_inc_pc <= 1'b0;
+        o_inc_dec_sp <= 2'b00;
+    
+        case(curr_state)
+            ALU: 
+                begin
+                    case(i_opcode[7:4])
+                        4'h3: o_alu_cmd <= 3'b001;
+                        4'h4: o_alu_cmd <= 3'b010;
+                        4'h6: o_alu_cmd <= 3'b011;
+                        4'h7: o_alu_cmd <= 3'b100;
+                        4'h8: o_alu_cmd <= 3'b101;
+                        4'h5: o_alu_cmd <= 3'b110;
+                        4'h9: o_alu_cmd <= 3'b111;
+                    endcase
+                end
+               MA_PC: o_transfer_cmd <= 4'h1;
+               READ_MEMORY_INC_PC:
+                    begin
+                        o_transfer_cmd <= 4'h1;
+                        o_inc_pc <= 1'b1;
+                     end
+               IR_MD: o_transfer_cmd <= 4'h3;
+               MA_PC_OPERAND: o_transfer_cmd <= 4'h1;
+               READ_OPERAND: o_transfer_cmd <= 4'h2;
+               MA_MD: o_transfer_cmd <= 4'h4;
+               READ_MEMORY: o_transfer_cmd <= 4'h2;
+               A_MD: o_transfer_cmd <= 4'h5;
+               AP_MD: o_transfer_cmd <= 4'h5;
+               MA_AP: o_transfer_cmd <= 4'h6;
+               MA_SP: o_transfer_cmd <= 4'h7;
+               READ_MEMORY_INC_SP:
+                    begin
+                        o_transfer_cmd <= 4'h2;
+                        o_inc_dec_sp <= 1'b01;
+                    end
+                MD_A: o_transfer_cmd <= 4'h8;
+                LOAD_DATA: ; // todo: decode what it is
+                MD_AP: o_transfer_cmd <= 4'h8;
+                DECREMENT_SP: o_inc_dec_sp <= 1'b10;
+                A_R: o_transfer_cmd <= 4'h5;
+                AP_R: o_transfer_cmd <= 4'h5;
+                JMP_MOV: o_transfer_cmd <= 4'hB;
+                A_IN: o_transfer_cmd <= 4'hC;
+                OUT_A: o_transfer_cmd <= 4'hD;
+            default: ;
+        
+        endcase
+    
+    end
+    
+    
+    assign next_instr = (curr_state == JMP_MOV) | (curr_state == AP_MD) |
     (curr_state == A_R) | (curr_state == AP_R) ;
     
 endmodule

@@ -1,6 +1,6 @@
 `timescale 1ns / 1ps
 
-module control_mov_tb;
+module control_jump_tb;
     
     logic i_clk;
     logic i_rstn;
@@ -20,8 +20,7 @@ module control_mov_tb;
     always #20 i_clk = ~i_clk;
     
     // Opcodes found in the design
-    logic [7:0] opcodes[] = '{8'h11, 8'h13, 8'h19, 8'h1B, 8'h21, 8'h23,
-                              8'h14, 8'h1C, 8'h1E, 8'h2C, 8'h2E};
+    logic [7:0] opcodes[] = {8'hA1, 8'hA5, 8'hA9};
     
     initial begin
         i_clk = 0;
