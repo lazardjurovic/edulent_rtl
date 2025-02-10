@@ -10,6 +10,7 @@ module control_unit(
     output reg[3:0] o_transfer_cmd,
     output reg o_inc_pc,
     output reg[1:0] o_inc_dec_sp,
+    output wire o_alu_res_to_ap,
     output wire next_instr
     /*
        
@@ -302,6 +303,8 @@ module control_unit(
         endcase
     
     end
+    
+    assign o_alu_res_to_ap = alu_res_to_ap;
     
     assign next_instr = (curr_state == JMP_MOV) | (curr_state == PC_AP);
     
