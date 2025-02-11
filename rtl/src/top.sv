@@ -18,6 +18,7 @@ module top(
     wire [7:0] i_mem_data_read;
     wire [7:0] o_mem_data_write;
     wire mem_write_enable;
+    wire reset_ir;
 
     // Instantiate the Control Unit
     control_unit control (
@@ -29,7 +30,7 @@ module top(
         .o_inc_pc(o_inc_pc),
         .o_inc_dec_sp(o_inc_dec_sp),
         .o_alu_res_to_ap(o_alu_res_to_ap),
-        .o_mem_write_enable(mem_write_enable)
+        .o_reset_ir(reset_ir)
     );
 
     // Instantiate the Data Path
@@ -47,7 +48,9 @@ module top(
         .o_mem_addr(o_mem_addr),
         .i_mem_data_read(i_mem_data_read),
         .o_mem_data_write(o_mem_data_write),
-        .o_IR(i_opcode)
+        .o_IR(i_opcode),
+        .i_reset_ir(reset_ir),
+        .o_mem_write_enable(mem_write_enable)
     );
 
     // Instantiate the Memory Module

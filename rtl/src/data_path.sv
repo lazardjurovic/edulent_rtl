@@ -13,6 +13,8 @@ module data_path(
     output reg[7:0] o_out,
     input wire i_alu_res_to_ap,
     output wire[7:0] o_IR,
+    input wire i_reset_ir,
+    output reg o_mem_write_enable,
 
     output reg [7:0] o_mem_addr,
     input reg [7:0] i_mem_data_read,
@@ -30,6 +32,9 @@ module data_path(
             {PC, IR, SP, MA, MD, OUT, IN, A, AP, R, CZ, IN, OUT} <= 0;
         end 
         else begin
+        
+        o_mem_data_write <= 0;
+        o_mem_write_enable <= 1'b0;
         
         IN <= i_in;
         
@@ -62,7 +67,11 @@ module data_path(
                             8'h2E: MD <= AP;
                         endcase
                     end
-                4'h9: o_mem_data_write <= MD; 
+                4'h9:
+                    begin
+                        o_mem_write_enable <= 1'b1;
+                        o_mem_data_write <= MD; 
+                    end 
                 4'hA:
                     begin
                         if(i_alu_res_to_ap == 1'b1) begin
@@ -93,6 +102,10 @@ module data_path(
                 4'hF: MD <= PC;
                 
             endcase
+            
+            if(i_reset_ir == 1'b1) begin
+                IR <= 0;
+            end
         
             // Drive PC
             if (i_inc_pc) 

@@ -11,7 +11,7 @@ module control_unit(
     output reg o_inc_pc,
     output reg[1:0] o_inc_dec_sp,
     output wire o_alu_res_to_ap,
-    output reg o_mem_write_enable
+    output wire o_reset_ir
     /*
        
        o_transfer_cmd for different commands
@@ -96,7 +96,6 @@ module control_unit(
     
     // next state generation logic
     always_comb begin
-        next_state <= RESET;
         case(curr_state)
         
             RESET: next_state <= MA_PC;
@@ -261,7 +260,6 @@ module control_unit(
         o_transfer_cmd <= 4'h0;
         o_inc_pc <= 1'b0;
         o_inc_dec_sp <= 2'b00;
-        o_mem_write_enable <= 1'b0;
     
         case(curr_state)
                ALU: o_alu_calculate <= 1'b1; 
@@ -290,11 +288,14 @@ module control_unit(
                         o_inc_dec_sp <= 1'b01;
                     end
                 MD_A: o_transfer_cmd <= 4'h8;
-                STORE_DATA: o_mem_write_enable <= 1'b1; // todo: decode what it is
+                STORE_DATA:
+                    begin
+                        o_transfer_cmd <= 4'h9;
+                    end
                 MD_AP: o_transfer_cmd <= 4'h8;
                 DECREMENT_SP: o_inc_dec_sp <= 1'b10;
-                A_R: o_transfer_cmd <= 4'h5;
-                AP_R: o_transfer_cmd <= 4'h5;
+                A_R: o_transfer_cmd <= 4'hA;
+                AP_R: o_transfer_cmd <= 4'hA;
                 JMP_MOV: o_transfer_cmd <= 4'hB;
                 A_IN: o_transfer_cmd <= 4'hC;
                 OUT_A: o_transfer_cmd <= 4'hD;
@@ -307,5 +308,6 @@ module control_unit(
     end
     
     assign o_alu_res_to_ap = alu_res_to_ap;
+    assign o_reset_ir = (curr_state == MA_PC);
     
 endmodule
