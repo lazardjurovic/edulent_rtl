@@ -41,7 +41,7 @@ module control_unit(
         RESET,
         MA_PC, READ_MEMORY_INC_PC, IR_MD, MA_PC_OPERAND, READ_OPERAND, MA_MD, READ_MEMORY,A_MD,AP_MD,
         MA_AP, MA_SP, READ_MEMORY_INC_SP, MD_A, STORE_DATA, MD_AP, DECREMENT_SP,
-        A_R, AP_R, JMP_MOV, ALU, A_IN, OUT_A, MD_PC, PC_AP
+        A_R, AP_R, JMP_MOV, ALU, A_IN, OUT_A, MD_PC, PC_AP, END
     } state_t;
        
     state_t curr_state, next_state;
@@ -125,7 +125,7 @@ module control_unit(
                                 8'hD0: next_state <= A_IN;
                                 8'hE0: next_state <= OUT_A;
                                 8'hB0: next_state <= MA_SP;
-                                8'hC1: ; //CALL impelmentation
+                                8'h02: next_state <= END;
                                 default: ;                                
                             endcase                 
                         end
@@ -249,6 +249,7 @@ module control_unit(
             OUT_A: next_state <= MA_PC;
             MD_PC: next_state <= STORE_DATA;
             PC_AP : next_state <= MA_PC;
+            END: next_state <= END;
         endcase
     
     end
