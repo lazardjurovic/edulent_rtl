@@ -268,7 +268,7 @@ module control_unit(
                MA_PC: o_transfer_cmd <= 4'h1;
                READ_MEMORY_INC_PC:
                     begin
-                        o_transfer_cmd <= 4'h1;
+                        o_transfer_cmd <= 4'h2;
                         o_inc_pc <= 1'b1;
                      end
                IR_MD: o_transfer_cmd <= 4'h3;
