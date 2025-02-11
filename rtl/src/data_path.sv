@@ -31,6 +31,8 @@ module data_path(
         end 
         else begin
         
+        IN <= i_in;
+        
        // Drive register transactions
             case (i_transfer_cmd)
                 4'h1: MA <= PC;
@@ -122,8 +124,7 @@ module data_path(
     end
     
     assign o_out = OUT;
-    assign IN = i_in;
-    
+    assign o_mem_addr = MA;
     assign o_IR = IR;
     
     // ALU combinational logic

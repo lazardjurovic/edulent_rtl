@@ -14,7 +14,6 @@ module top(
     wire o_inc_pc;
     wire [1:0] o_inc_dec_sp;
     wire o_alu_res_to_ap;
-    wire next_instr;
     wire [7:0] o_mem_addr;
     wire [7:0] i_mem_data_read;
     wire [7:0] o_mem_data_write;
@@ -30,7 +29,6 @@ module top(
         .o_inc_pc(o_inc_pc),
         .o_inc_dec_sp(o_inc_dec_sp),
         .o_alu_res_to_ap(o_alu_res_to_ap),
-        .next_instr(next_instr),
         .o_mem_write_enable(mem_write_enable)
     );
 
@@ -55,6 +53,7 @@ module top(
     // Instantiate the Memory Module
     memory mem (
         .i_clk(i_clk),
+        .i_rstn(i_rstn),
         .i_mem_addr(o_mem_addr),
         .i_mem_data_write(o_mem_data_write),
         .o_mem_data_read(i_mem_data_read),
