@@ -46,9 +46,9 @@ module control_unit(
     state_t curr_state, next_state;
     
     always_ff @(posedge i_clk or negedge i_rstn) begin
-        if (!i_rstn)
+        if (!i_rstn) begin
             curr_state <= RESET;  // Reset to IDLE state
-        else
+        end else
             curr_state <= next_state;
     end
 
@@ -96,8 +96,10 @@ module control_unit(
     
     // next state generation logic
     always_comb begin
-        case(curr_state)
         
+        next_state <= IR_MD;
+        
+        case(curr_state) 
             RESET: next_state <= MA_PC;
             MA_PC: next_state <= READ_MEMORY_INC_PC;
             READ_MEMORY_INC_PC: next_state <= IR_MD;
