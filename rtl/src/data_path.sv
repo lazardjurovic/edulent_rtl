@@ -18,7 +18,7 @@ module data_path(
 
     output reg [7:0] o_mem_addr,
     input reg [7:0] i_mem_data_read,
-    input reg [7:0] o_mem_data_write
+    output reg [7:0] o_mem_data_write
 );
 
     // Registers defined in specs
