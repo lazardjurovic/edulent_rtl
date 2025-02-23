@@ -1,0 +1,5 @@
+create_clock -name clk -period 10 -waveform {0 5} [get_ports i_clk]
+set_property IOSTANDARD LVCMOS33 [get_ports i_in[*]]
+set_property IOSTANDARD LVCMOS33 [get_ports o_out[*]]
+set_property IOSTANDARD LVCMOS33 [get_ports i_clk]
+set_property IOSTANDARD LVCMOS33 [get_ports i_rstn]
