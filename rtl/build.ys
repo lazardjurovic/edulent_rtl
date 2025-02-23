@@ -1,0 +1,9 @@
+read_verilog -sv src/control_unit.sv
+read_verilog -sv src/data_path.sv
+read_verilog -sv src/memory.sv
+read_verilog -sv src/edulent.sv
+
+hierarchy -top edulent
+synth_ecp5
+opt_clean -purge
+stat 

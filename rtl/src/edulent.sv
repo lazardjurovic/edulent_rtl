@@ -1,6 +1,6 @@
 `timescale 1ns / 1ps
 
-module top(
+module edulent(
     input wire i_clk,
     input wire i_rstn,
     input wire [7:0] i_in,
