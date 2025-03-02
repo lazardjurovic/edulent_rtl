@@ -283,7 +283,12 @@ module control_unit(
                MA_MD: o_transfer_cmd <= 4'h4;
                READ_MEMORY: o_transfer_cmd <= 4'h2;
                A_MD: o_transfer_cmd <= 4'h5;
-               AP_MD: o_transfer_cmd <= 4'h5;
+               AP_MD:
+                    begin 
+                        o_transfer_cmd <= 4'h5;
+                        if(i_opcode == 8'hC1)
+                            o_inc_dec_sp <= 1'b01;
+                    end
                MA_AP: o_transfer_cmd <= 4'h6;
                MA_SP: o_transfer_cmd <= 4'h7;
                READ_MEMORY_INC_SP:

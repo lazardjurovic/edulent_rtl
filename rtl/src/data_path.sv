@@ -52,7 +52,7 @@ module data_path(
                             8'h19: A <= MD;
                             8'h1B: AP <= MD;
                             8'h14: A <= MD;
-                            8'h1C: AP <= MD;
+                            8'hC1: AP <= MD;
                             8'h1E: AP <= MD; 
                         endcase
                     end
@@ -84,6 +84,7 @@ module data_path(
                     begin
                         case(IR) 
                             8'hA1: PC <= MD;
+                            8'hB0: PC <= MD;
                             8'hA5:
                                 begin
                                     if(CZ[0] == 1'b1)
