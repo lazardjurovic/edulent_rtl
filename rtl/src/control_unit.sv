@@ -160,8 +160,8 @@ module control_unit(
                     case (i_opcode)
                         8'h21: next_state <= MD_A;
                         8'h23: next_state <= MD_AP;
-                        8'h31: next_state <= STORE_DATA;
-                        8'h41: next_state <= STORE_DATA;
+                        8'h31: next_state <= READ_MEMORY;
+                        8'h41: next_state <= READ_MEMORY;
                         8'h61: next_state <= STORE_DATA;
                         8'h71: next_state <= STORE_DATA;
                         8'h81: next_state <= STORE_DATA;
@@ -174,6 +174,8 @@ module control_unit(
                         8'h11: next_state <= A_MD;
                         8'h13: next_state <= AP_MD;
                         8'h14: next_state <= A_MD;
+                        8'h31: next_state <= ALU;
+                        8'h41: next_state <= ALU;
                         8'h34: next_state <= ALU;
                         8'h44: next_state <= ALU;
                         8'h64: next_state <= ALU;
