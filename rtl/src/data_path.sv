@@ -141,13 +141,13 @@ module data_path(
     assign o_IR = IR;
     
     // ALU combinational logic
-    assign alu_res = (IR[7:4] == 4'h3) ? (A + MD) :
-                     (IR[7:4] == 4'h4) ? (A - MD) :
-                     (IR[7:4] == 4'h5) ? (~A) :
-                     (IR[7:4] == 4'h6) ? (A | MD) :
-                     (IR[7:4] == 4'h7) ? (A & MD) :
-                     (IR[7:4] == 4'h8) ? (A ^ MD) :
-                     (IR[7:4] == 4'h9) ? {1'b0, A[7:1]} :
-                     8'b0;
-    
+assign alu_res = (IR[7:4] == 4'h3) ? (i_alu_res_to_ap ? (AP + MD) : (A + MD)) :
+                 (IR[7:4] == 4'h3) ? (i_alu_res_to_ap ? (AP - MD) : (A - MD)) :
+                 (IR[7:4] == 4'h5) ? (~A) :
+                 (IR[7:4] == 4'h6) ? (A | MD) :
+                 (IR[7:4] == 4'h7) ? (A & MD) :
+                 (IR[7:4] == 4'h8) ? (A ^ MD) :
+                 (IR[7:4] == 4'h9) ? {1'b0, A[7:1]} :
+                 8'b0;
+
 endmodule
