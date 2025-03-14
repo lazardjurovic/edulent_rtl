@@ -22,14 +22,16 @@ module data_path(
 );
 
     // Registers defined in specs
-    reg [7:0] PC, IR, SP, MA, MD, A, AP, R, IN, OUT;
+    reg [7:0] PC, IR, MA, MD, A, AP, R, IN, OUT;
+    reg [7:0] SP = 8'h7F;
     reg [1:0] CZ; // carry and zero flag
     wire [7:0] alu_res;
 
     always_ff @(posedge i_clk or negedge i_rstn) begin
         if (!i_rstn) begin
             // Reset all registers to zero
-            {PC, IR, SP, MA, MD, OUT, IN, A, AP, R, CZ, IN, OUT} <= 0;
+            {PC, IR, MA, MD, OUT, IN, A, AP, R, CZ, IN, OUT} <= 0;
+            SP <= 8'h7F;
         end 
         else begin
         
@@ -143,12 +145,13 @@ module data_path(
     
     // ALU combinational logic
 assign alu_res = (IR[7:4] == 4'h3) ? (i_alu_res_to_ap ? (AP + MD) : (A + MD)) :
-                 (IR[7:4] == 4'h3) ? (i_alu_res_to_ap ? (AP - MD) : (A - MD)) :
+                 (IR[7:4] == 4'h4) ? (i_alu_res_to_ap ? (AP - MD) : (A - MD)) :  
                  (IR[7:4] == 4'h5) ? (~A) :
                  (IR[7:4] == 4'h6) ? (A | MD) :
                  (IR[7:4] == 4'h7) ? (A & MD) :
                  (IR[7:4] == 4'h8) ? (A ^ MD) :
                  (IR[7:4] == 4'h9) ? {1'b0, A[7:1]} :
-                 8'b0;
+                 8'hFF;
 
+    
 endmodule

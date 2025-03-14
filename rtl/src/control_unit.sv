@@ -86,10 +86,10 @@ module control_unit(
     (i_opcode == 8'h41),
     (i_opcode == 8'h61),
     (i_opcode == 8'h71),
-    (i_opcode == 8'h81),
-    (i_opcode == 8'hA1),
-    (i_opcode == 8'hA5),
-    (i_opcode == 8'hA9)
+    (i_opcode == 8'h81)
+    //(i_opcode == 8'hA1),
+    //(i_opcode == 8'hA5),
+    //(i_opcode == 8'hA9)
 });
     
     wire alu_res_to_ap = (i_opcode == 8'h3B) | (i_opcode == 8'h4B);
@@ -134,7 +134,6 @@ module control_unit(
              READ_OPERAND:
                 begin
                     if(mov_with_address == 1'b1) begin
-                        
                         next_state <= MA_MD;
                     end else 
                         begin    
@@ -151,6 +150,9 @@ module control_unit(
                                 8'h79: next_state <= ALU;
                                 8'h89: next_state <= ALU;
                                 8'hC1: next_state <= AP_MD;
+                                8'hA1: next_state <= JMP_MOV;
+                                8'hA5: next_state <= JMP_MOV;
+                                8'hA9: next_state <= JMP_MOV;
                                 default: ;
                             endcase
                         end
@@ -181,9 +183,9 @@ module control_unit(
                         8'h64: next_state <= ALU;
                         8'h74: next_state <= ALU;
                         8'h84: next_state <= ALU;
-                        8'hA1: next_state <= JMP_MOV;
-                        8'hA5: next_state <= JMP_MOV;
-                        8'hA9: next_state <= JMP_MOV;
+//                        8'hA1: next_state <= JMP_MOV;
+//                        8'hA5: next_state <= JMP_MOV;
+//                        8'hA9: next_state <= JMP_MOV;
                         default: ;
                     endcase
                 end
@@ -260,7 +262,7 @@ module control_unit(
     
     always_comb begin
     
-        o_alu_calculate <= 1'b1;
+        o_alu_calculate <= 1'b0;
         o_transfer_cmd <= 4'h0;
         o_inc_pc <= 1'b0;
         o_inc_dec_sp <= 2'b00;
