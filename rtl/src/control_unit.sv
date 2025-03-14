@@ -287,14 +287,14 @@ module control_unit(
                     begin 
                         o_transfer_cmd <= 4'h5;
                         if(i_opcode == 8'hC1)
-                            o_inc_dec_sp <= 1'b01;
+                            o_inc_dec_sp <= 2'b10;
                     end
                MA_AP: o_transfer_cmd <= 4'h6;
                MA_SP: o_transfer_cmd <= 4'h7;
                READ_MEMORY_INC_SP:
                     begin
                         o_transfer_cmd <= 4'h2;
-                        o_inc_dec_sp <= 1'b01;
+                        o_inc_dec_sp <= 2'b01;
                     end
                 MD_A: o_transfer_cmd <= 4'h8;
                 STORE_DATA:
@@ -302,7 +302,7 @@ module control_unit(
                         o_transfer_cmd <= 4'h9;
                     end
                 MD_AP: o_transfer_cmd <= 4'h8;
-                DECREMENT_SP: o_inc_dec_sp <= 1'b10;
+                DECREMENT_SP: o_inc_dec_sp <= 2'b10;
                 A_R: o_transfer_cmd <= 4'hA;
                 AP_R: o_transfer_cmd <= 4'hA;
                 JMP_MOV: o_transfer_cmd <= 4'hB;
