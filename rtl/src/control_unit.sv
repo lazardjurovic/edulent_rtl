@@ -191,13 +191,7 @@ module control_unit(
                 end
             A_MD: next_state <= MA_PC;
             AP_MD:
-                begin
-                    if(i_opcode == 8'hC1) begin
-                        next_state <= MA_SP;
-                    end else begin
-                        next_state <= MA_PC;
-                    end
-                end
+                next_state <= (i_opcode == 8'hC1) ? MA_SP : MA_PC;
             MA_AP: next_state <= READ_MEMORY;
             MA_SP:
                 begin
@@ -237,17 +231,7 @@ module control_unit(
             DECREMENT_SP: next_state <= MA_SP;
             A_R: next_state <= MA_PC;
             AP_R: next_state <= MA_PC;
-            ALU:
-                begin
-                    
-                    if( alu_res_to_ap == 1'b1) begin
-                        next_state <= AP_R;
-                    end else begin // result goes to A
-                        next_state <= A_R;
-                    end
-                    
-                end
-            
+            ALU: next_state <= alu_res_to_ap ? AP_R : A_R;
             JMP_MOV: next_state <= MA_PC;
             A_IN: next_state <= MA_PC;
             OUT_A: next_state <= MA_PC;
@@ -299,10 +283,7 @@ module control_unit(
                         o_inc_dec_sp <= 2'b01;
                     end
                 MD_A: o_transfer_cmd <= 4'h8;
-                STORE_DATA:
-                    begin
-                        o_transfer_cmd <= 4'h9;
-                    end
+                STORE_DATA: o_transfer_cmd <= 4'h9;
                 MD_AP: o_transfer_cmd <= 4'h8;
                 DECREMENT_SP: o_inc_dec_sp <= 2'b10;
                 A_R: o_transfer_cmd <= 4'hA;
