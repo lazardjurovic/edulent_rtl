@@ -87,9 +87,6 @@ module control_unit(
     (i_opcode == 8'h61),
     (i_opcode == 8'h71),
     (i_opcode == 8'h81)
-    //(i_opcode == 8'hA1),
-    //(i_opcode == 8'hA5),
-    //(i_opcode == 8'hA9)
 });
     
     wire alu_res_to_ap = (i_opcode == 8'h3B) | (i_opcode == 8'h4B);
@@ -183,9 +180,6 @@ module control_unit(
                         8'h64: next_state <= ALU;
                         8'h74: next_state <= ALU;
                         8'h84: next_state <= ALU;
-//                        8'hA1: next_state <= JMP_MOV;
-//                        8'hA5: next_state <= JMP_MOV;
-//                        8'hA9: next_state <= JMP_MOV;
                         default: ;
                     endcase
                 end
