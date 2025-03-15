@@ -8,7 +8,7 @@ module top_tb;
     logic[7:0] o_out;
 
     // Instantiate the DUT (Device Under Test)
-    top uut (
+    edulent uut (
         .i_clk(i_clk),
         .i_rstn(i_rstn),
         .i_in(i_in),
