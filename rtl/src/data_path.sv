@@ -7,23 +7,23 @@ localparam MAX_VAL = 8'hFF;
 module data_path(
     input wire i_clk,
     input wire i_rstn,
-
     input wire i_alu_calculate,
     input wire [3:0] i_transfer_cmd,
     input wire i_inc_pc,
     input wire [1:0] i_inc_dec_sp,
     input wire next_instr,
-    input reg[7:0] i_in,
-    output reg[7:0] o_out,
+    input reg [7:0] i_in,
     input wire i_alu_res_to_ap,
-    output reg[7:0] o_IR,
     input wire i_reset_ir,
-    output reg o_mem_write_enable,
-
-    output reg [7:0] o_mem_addr,
     input reg [7:0] i_mem_data_read,
+
+    output reg [7:0] o_out,
+    output wire [7:0] o_IR,
+    output reg o_mem_write_enable,
+    output reg [7:0] o_mem_addr,
     output reg [7:0] o_mem_data_write
 );
+
 
     // Registers defined in specs
     reg [7:0] PC, IR, MA, MD, A, AP, R, IN, OUT, SP;
@@ -42,17 +42,12 @@ module data_path(
         o_mem_write_enable <= 1'b0;
         
         IN <= i_in;
-        o_IR <= IR;
         
        // Drive register transactions
         unique case (i_transfer_cmd)
                 4'h1: MA <= PC;
                 4'h2: MD <= i_mem_data_read;
-                4'h3:
-                    begin
-                        o_IR <= MD;
-                        IR <= MD;
-                    end
+                4'h3: IR <= MD;
                 4'h4: MA <= MD;
                 4'h5:
                     begin
@@ -125,6 +120,7 @@ module data_path(
     
     assign o_out = OUT;
     assign o_mem_addr = MA;
+    assign o_IR = IR;
     
     // ALU combinational logic
     assign alu_res = (IR[7:4] == 4'h3) ? (i_alu_res_to_ap ? (AP + MD) : (A + MD)) :
