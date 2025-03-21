@@ -1,0 +1,11 @@
+`ifndef TYPES_SV
+`define TYPES_SV
+
+typedef enum logic[4:0] {
+    RESET,
+    MA_PC, READ_MEMORY_INC_PC, IR_MD, MA_PC_OPERAND, READ_OPERAND, MA_MD, READ_MEMORY,A_MD,AP_MD,
+    MA_AP, MA_SP, READ_MEMORY_INC_SP, MD_A, STORE_DATA, MD_AP, DECREMENT_SP,
+    A_R, AP_R, JMP_MOV, ALU, A_IN, OUT_A, MD_PC, PC_AP, END
+} state_t;
+
+`endif 

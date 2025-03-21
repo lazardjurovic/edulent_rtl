@@ -1,5 +1,8 @@
 `timescale 1ns / 1ps
 
+`include "includes/types.sv"
+`include "includes/rom_tables.sv"
+
 module control_unit(
 
     input wire i_clk,
@@ -35,15 +38,20 @@ module control_unit(
     */
     
     );
-    
-    typedef enum logic[4:0] {
-        RESET,
-        MA_PC, READ_MEMORY_INC_PC, IR_MD, MA_PC_OPERAND, READ_OPERAND, MA_MD, READ_MEMORY,A_MD,AP_MD,
-        MA_AP, MA_SP, READ_MEMORY_INC_SP, MD_A, STORE_DATA, MD_AP, DECREMENT_SP,
-        A_R, AP_R, JMP_MOV, ALU, A_IN, OUT_A, MD_PC, PC_AP, END
-    } state_t;
        
     state_t curr_state, next_state;
+    
+    logic[255:0] read_operand_rom, mov_with_address_rom;
+    
+    // Instantiate the ROMs
+    rom_tables rom_inst (
+        .read_operand_rom(read_operand_rom), 
+        .mov_with_address_rom(mov_with_address_rom) 
+    );
+
+    // Assign the corresponding bits from the ROMs based on the opcode
+    assign read_operand = read_operand_rom[i_opcode];
+    assign mov_with_address = mov_with_address_rom[i_opcode];
     
     always_ff @(posedge i_clk or negedge i_rstn) begin
         if (!i_rstn) begin
@@ -52,42 +60,6 @@ module control_unit(
             curr_state <= next_state;
     end
 
-    wire read_operand = |({
-        (i_opcode == 8'h11),
-        (i_opcode == 8'h13),
-        (i_opcode == 8'h19),
-        (i_opcode == 8'h1B),
-        (i_opcode == 8'h21),
-        (i_opcode == 8'h23),
-        (i_opcode == 8'h31),
-        (i_opcode == 8'h41),
-        (i_opcode == 8'h39),
-        (i_opcode == 8'h49),
-        (i_opcode == 8'h3B),
-        (i_opcode == 8'h4B),
-        (i_opcode == 8'h61),
-        (i_opcode == 8'h71),
-        (i_opcode == 8'h81),
-        (i_opcode == 8'h69),
-        (i_opcode == 8'h79),
-        (i_opcode == 8'h89),
-        (i_opcode == 8'hA1),
-        (i_opcode == 8'hA5),
-        (i_opcode == 8'hA9),
-        (i_opcode == 8'hC1)
-    });
-
-    wire mov_with_address = |({
-    (i_opcode == 8'h11),
-    (i_opcode == 8'h13),
-    (i_opcode == 8'h21),
-    (i_opcode == 8'h23),
-    (i_opcode == 8'h31),
-    (i_opcode == 8'h41),
-    (i_opcode == 8'h61),
-    (i_opcode == 8'h71),
-    (i_opcode == 8'h81)
-});
     
     wire alu_res_to_ap = (i_opcode == 8'h3B) | (i_opcode == 8'h4B);
     
