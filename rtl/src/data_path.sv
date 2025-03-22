@@ -12,7 +12,7 @@ module data_path(
     input wire [3:0] i_transfer_cmd,
     input wire i_inc_pc,
     input wire [1:0] i_inc_dec_sp,
-    input reg [7:0] i_in,
+    input wire [7:0] i_in,
     input wire i_alu_res_to_ap,
     input wire i_reset_ir,
     input reg [7:0] i_mem_data_read,
