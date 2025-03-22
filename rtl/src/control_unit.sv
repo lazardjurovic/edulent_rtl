@@ -39,18 +39,10 @@ module control_unit(
     
     );
        
-    state_t curr_state, next_state;
-    
-    logic[255:0] read_operand_rom, mov_with_address_rom;
+    state_t curr_state, next_state; 
     
     reg inc_dec_sp;
     
-    // Instantiate the ROMs
-    rom_tables rom_inst (
-        .read_operand_rom(read_operand_rom), 
-        .mov_with_address_rom(mov_with_address_rom) 
-    );
-
     // Assign the corresponding bits from the ROMs based on the opcode
     assign read_operand = read_operand_rom[i_opcode];
     assign mov_with_address = mov_with_address_rom[i_opcode];
