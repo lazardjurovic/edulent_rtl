@@ -41,7 +41,6 @@ module edulent(
         .i_transfer_cmd(o_transfer_cmd),
         .i_inc_pc(o_inc_pc),
         .i_inc_dec_sp(o_inc_dec_sp),
-        .next_instr(next_instr),
         .i_in(i_in),
         .o_out(o_out),
         .i_alu_res_to_ap(o_alu_res_to_ap),

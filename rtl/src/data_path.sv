@@ -5,18 +5,19 @@ localparam ZERO_VAL = 8'h00;
 localparam MAX_VAL = 8'hFF;
 
 module data_path(
+    // Input Signals
     input wire i_clk,
     input wire i_rstn,
     input wire i_alu_calculate,
     input wire [3:0] i_transfer_cmd,
     input wire i_inc_pc,
     input wire [1:0] i_inc_dec_sp,
-    input wire next_instr,
     input reg [7:0] i_in,
     input wire i_alu_res_to_ap,
     input wire i_reset_ir,
     input reg [7:0] i_mem_data_read,
 
+    // Output Signals
     output reg [7:0] o_out,
     output wire [7:0] o_IR,
     output reg o_mem_write_enable,
