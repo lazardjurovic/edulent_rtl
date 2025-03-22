@@ -43,6 +43,8 @@ module control_unit(
     
     logic[255:0] read_operand_rom, mov_with_address_rom;
     
+    reg inc_dec_sp;
+    
     // Instantiate the ROMs
     rom_tables rom_inst (
         .read_operand_rom(read_operand_rom), 
@@ -215,7 +217,7 @@ module control_unit(
         o_alu_calculate <= 1'b0;
         o_transfer_cmd <= 4'h0;
         o_inc_pc <= 1'b0;
-        o_inc_dec_sp <= 2'b00;
+        inc_dec_sp <= 2'b00;
     
         case(curr_state)
                ALU: o_alu_calculate <= 1'b1; 
@@ -239,19 +241,19 @@ module control_unit(
                     begin 
                         o_transfer_cmd <= 4'h5;
                         if(i_opcode == 8'hC1)
-                            o_inc_dec_sp <= 2'b10;
+                            inc_dec_sp <= 2'b10;
                     end
                MA_AP: o_transfer_cmd <= 4'h6;
                MA_SP: o_transfer_cmd <= 4'h7;
                READ_MEMORY_INC_SP:
                     begin
                         o_transfer_cmd <= 4'h2;
-                        o_inc_dec_sp <= 2'b01;
+                        inc_dec_sp <= 2'b01;
                     end
                 MD_A: o_transfer_cmd <= 4'h8;
                 STORE_DATA: o_transfer_cmd <= 4'h9;
                 MD_AP: o_transfer_cmd <= 4'h8;
-                DECREMENT_SP: o_inc_dec_sp <= 2'b10;
+                DECREMENT_SP: inc_dec_sp <= 2'b10;
                 A_R: o_transfer_cmd <= 4'hA;
                 AP_R: o_transfer_cmd <= 4'hA;
                 JMP_MOV: o_transfer_cmd <= 4'hB;
@@ -267,5 +269,6 @@ module control_unit(
     
     assign o_alu_res_to_ap = alu_res_to_ap;
     assign o_reset_ir = (curr_state == MA_PC);
+    assign o_inc_dec_sp = inc_dec_sp;
     
 endmodule
