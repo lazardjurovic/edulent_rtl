@@ -43,7 +43,7 @@ SystemVerilog implementation of Edulent CPU is found in  rtl/
 
 ## Synthesys
 Currently Edulent is synthesizable using Xilinx's Vivado or using Yosys. Having in mind that Vivado is much stricter when it comes to what can be synthesized it is mainly used for code development and after that code is also tested with yosys. Yosys is important because this project is meant to go through OpenLane flow when It is finished and Yosys is one of main tools used there. 
-To run synthesis with yosys for ecp5 board You first need to get it from [this github link](https://github.com/YosysHQ/yosys) and after that just go to rtl/ and run:
+To run synthesis with yosys for ecp5 board You first need to get it from [this github link](https://github.com/YosysHQ/yosys) and nextpnr which can be found [here](https://github.com/YosysHQ/nextpnr) and after that just go to rtl/ and run:
 
     make yosys
    To run synthesis with Vivado for now You must import source files to a project and run it manually. ( TODO tcl script )
