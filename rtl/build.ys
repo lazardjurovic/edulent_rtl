@@ -3,9 +3,8 @@ read_verilog -sv src/data_path.sv
 read_verilog -sv src/memory.sv
 read_verilog -sv src/edulent.sv
 read_verilog -sv src/includes/types.sv
-read_verilog -sv src/includes/rom_tables.sv
 
 hierarchy -top edulent
-synth_ecp5
+synth_ecp5  -json hardware.json
 opt_clean -purge
 stat 
